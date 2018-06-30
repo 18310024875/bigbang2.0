@@ -1,0 +1,12 @@
+{
+  "name": "com-loader",
+  "version": "1.0.0",
+  "description": "",
+  "name": "com",
+  "main": "com.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

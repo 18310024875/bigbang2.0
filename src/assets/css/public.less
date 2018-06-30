@@ -1,0 +1,76 @@
+@import './reset.less';
+@import './font/style.css';
+
+*{
+	box-sizing:border-box;
+}
+
+html{
+	overflow: auto;
+}
+
+body {
+    color: #495060;
+    word-break: break-all;
+    background-color: #f1f1f1;
+}
+
+html,body,#app,.vrouter_wrap,.vcomponent_wrap{
+	position:relative;
+	height:100%;
+}
+
+.img-wrap{
+    background: url('~assets/images/wait.gif') no-repeat 50% 50%;
+    background-size: 25px 25px;
+}
+.g-ui-yes,.g-ui-no,.g-ui-yes,.g-ui-say{
+	display: none;
+	padding: 0 35px;
+    height: 38px;
+    line-height: 38px;
+	text-align: center;
+	font-size: 14px;
+	position: fixed;
+	z-index: 100;
+	background: white;
+	top: 30%;left: 50%;
+	transform: translateX(-50%);
+	border-radius: 5px;
+	box-shadow: rgba(0,0,0,0.13) 0 4px 10px;
+	color: #666;
+	.icon{
+		font-size: 15px;
+	}
+}
+.g-ui-yes .ic{
+	color: #31d99c;
+	margin-right: 5px;
+}
+.g-ui-no .ic{
+	color: #FFDE00;
+	font-size: 16px;
+	margin-right: 5px;
+}
+
+.cp{
+	cursor: pointer;
+}
+.elli{
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+
+.rot_animate{
+	transform-origin: 50% 50%;
+	animation: rot_animate 0.7s infinite linear;
+}
+@keyframes rot_animate{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}

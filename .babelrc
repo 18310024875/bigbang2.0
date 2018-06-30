@@ -1,0 +1,22 @@
+{
+	"presets": [
+	    ["env",{
+	        "targets": {
+	            "browsers": [
+		            "ios >= 6",
+		            "android >= 4.4"
+		        ]
+	        }
+	    }],
+	    "stage-2"
+	],
+	"plugins": [
+		["component", [
+				{
+					"libraryName": "mint-ui",
+					"style": true
+				}]
+		],
+		"transform-remove-strict-mode"
+	]
+}

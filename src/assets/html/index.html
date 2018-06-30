@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="telephone=no,email=no" name="format-detection">
+    <!-- 解决mintui适配 -->
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title></title>
+</head>
+
+<body>
+    
+    <!--禁止ios长按选中-->
+    <script type="text/javascript">
+        window.onload = function () {
+            document.documentElement.style.webkitTouchCallout = 'none';
+            document.documentElement.style.webkitUserSelect = "none";
+        };
+    </script>
+
+    <div id="app"></div>
+   
+</body>
+
+</html>

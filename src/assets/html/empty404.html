@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="telephone=no,email=no" name="format-detection">
+    <!-- 解决mintui适配 -->
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title></title>
+<style type="text/css">
+    *{
+        padding:0;margin: 0;
+    }
+    html,body{
+        width: 100%;height: 100%;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+    .empty404{
+        position: absolute;
+        left: 0;right: 0;
+        top: 0;bottom: 0;
+    }
+    .wrap{
+        position: absolute;
+        width: 5rem;
+        top: 30%;
+        left: 50%;
+    }
+    .wrap2{
+        width: 5rem;
+        position: relative;
+        left: -50%;
+        text-align: center;
+    }
+    .wrap2 img{
+        width: 2rem;
+        text-align: center;
+    }
+    .wrap2 p{
+        color: #999;
+        font-size: .37333333rem;
+        margin: 1em 0;
+    }
+</style>
+</head>
+
+<body>
+    <!--flexible-->
+    <script type="text/javascript">
+        ;(function(win, lib) {
+            var doc = win.document;
+            var docEl = doc.documentElement;
+            var metaEl = doc.querySelector('meta[name="viewport"]');
+            var flexibleEl = doc.querySelector('meta[name="flexible"]');
+            var dpr = 0;
+            var scale = 0;
+            var tid;
+            var flexible = lib.flexible || (lib.flexible = {});
+
+            if (metaEl) {
+                console.warn('将根据已有的meta标签来设置缩放比例');
+                var match = metaEl.getAttribute('content').match(/initial\-scale=([\d\.]+)/);
+                if (match) {
+                    scale = parseFloat(match[1]);
+                    dpr = parseInt(1 / scale);
+                }
+            } else if (flexibleEl) {
+                var content = flexibleEl.getAttribute('content');
+                if (content) {
+                    var initialDpr = content.match(/initial\-dpr=([\d\.]+)/);
+                    var maximumDpr = content.match(/maximum\-dpr=([\d\.]+)/);
+                    if (initialDpr) {
+                        dpr = parseFloat(initialDpr[1]);
+                        scale = parseFloat((1 / dpr).toFixed(2));
+                    }
+                    if (maximumDpr) {
+                        dpr = parseFloat(maximumDpr[1]);
+                        scale = parseFloat((1 / dpr).toFixed(2));
+                    }
+                }
+            }
+
+            if (!dpr && !scale) {
+                //devicePixelRatio这个属性是可以获取到设备的dpr
+                var devicePixelRatio = win.devicePixelRatio;
+                //判断dpr是否为整数
+                var isRegularDpr = devicePixelRatio.toString().match(/^[1-9]\d*$/g)
+                if (isRegularDpr) {
+                    // 对于是整数的dpr，对dpr进行操作
+                     if (devicePixelRatio >= 3 && (!dpr || dpr >= 3)) {
+                        dpr = 3;
+                    } else if (devicePixelRatio >= 2 && (!dpr || dpr >= 2)){
+                        dpr = 2;
+                    } else {
+                        dpr = 1;
+                    }
+                } else {
+                // 对于其他的dpr，人采用dpr为1的方案
+                dpr = 1;
+                }
+                scale = 1 / dpr;
+            }
+
+            docEl.setAttribute('data-dpr', dpr);
+            if (!metaEl) {
+                metaEl = doc.createElement('meta');
+                metaEl.setAttribute('name', 'viewport');
+                metaEl.setAttribute('content', 'width=device-width,initial-scale=' + scale + ', maximum-scale=' + scale + ', minimum-scale=' + scale + ', user-scalable=no');
+                if (docEl.firstElementChild) {
+                    docEl.firstElementChild.appendChild(metaEl);
+                } else {
+                    var wrap = doc.createElement('div');
+                    wrap.appendChild(metaEl);
+                    doc.write(wrap.innerHTML);
+                }
+            }
+
+            function refreshRem(){
+                var width = docEl.getBoundingClientRect().width;
+                if (width / dpr > 540) {
+                    width = 540 * dpr;
+                }
+                var rem = width / 10;
+                docEl.style.fontSize = rem + 'px';
+                flexible.rem = win.rem = rem;
+            }
+
+            win.addEventListener('resize', function() {
+                clearTimeout(tid);
+                tid = setTimeout(refreshRem, 300);
+            }, false);
+            win.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    clearTimeout(tid);
+                    tid = setTimeout(refreshRem, 300);
+                }
+            }, false);
+
+            if (doc.readyState === 'complete') {
+                doc.body.style.fontSize = 12 * dpr + 'px';
+            } else {
+                doc.addEventListener('DOMContentLoaded', function(e) {
+                    doc.body.style.fontSize = 12 * dpr + 'px';
+                }, false);
+            }
+
+
+            refreshRem();
+
+            flexible.dpr = win.dpr = dpr;
+            flexible.refreshRem = refreshRem;
+            flexible.rem2px = function(d) {
+                var val = parseFloat(d) * this.rem;
+                if (typeof d === 'string' && d.match(/rem$/)) {
+                    val += 'px';
+                }
+                return val;
+            }
+            flexible.px2rem = function(d) {
+                var val = parseFloat(d) / this.rem;
+                if (typeof d === 'string' && d.match(/px$/)) {
+                    val += 'rem';
+                }
+                return val;
+            }
+
+        })(window, window['lib'] || (window['lib'] = {}));
+    </script>
+    <!--禁止ios长按选中-->
+    <script type="text/javascript">
+        window.onload = function () {
+            document.documentElement.style.webkitTouchCallout = 'none';
+            document.documentElement.style.webkitUserSelect = "none";
+        };
+    </script>
+
+    <div id="empty404">
+        <div class="wrap">
+            <div class="wrap2">
+                <img src="../images/404.png">
+                <p>抱歉， 您暂无权限查看请联系 企业管理员开通。</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
