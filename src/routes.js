@@ -5,13 +5,7 @@ import projectType from 'components/project-type/project-type';
 
 export default [
 	{
-		path:  'project',
-		option: project ,
-		children:[
-			{
-				path:  'projectType',
-				option: projectType
-			}
-		]
+		path:  'projectType',
+		option: projectType
 	}
 ]

@@ -1,35 +1,20 @@
-Array.prototype.has  = function(str){
-	return this.indexOf(str)>-1 ? true : false ;
-}
-String.prototype.has = function(str){
-	return this.indexOf(str)>-1 ? true : false ;
-}
+// var FORM_PROPS = ['id','src','href','title','value','readonly','disabled','checked','selected','autofocus','multiple','action']
+var FORM_PROPS = ['readOnly','disabled','checked','selected','autofocus','multiple'];
 
-
-var t = Date.parse(new Date());
+var id= Date.parse( new Date() );
 
 var $ = {
-
+	onlyId(){
+		return ++id ;
+	},
+// dom 相关 ;
 	q:function(str){
 		return document.querySelector(str)
 	},
 	qs:function(str){
 		return document.querySelectorAll(str)
 	},
-
-	onlyId:function(){
-		return 'id_'+(++t);
-	},
-
-	// formProps:['id','src','href','title','value','readonly','disabled','checked','selected','autofocus','multiple','action'],
-	formProps:['readOnly','disabled','checked','selected','autofocus','multiple'],
-	setAttr:function( dom , key , value ){
-		if( $.formProps.has(key) ){
-			dom[key] = !!v.value ;
-		}else{
-			typeof value=='object' ? dom.setAttribute(key,JSON.stringify(value)) : dom.setAttribute(key,value)
-		}
-	},
+	// ***set
 	setClass:function( dom , obj ){
 		// typeof c == 'number'? c=c.toString() : null ; 
 		for(var k in obj ){
@@ -42,11 +27,25 @@ var $ = {
 			dom.style[k] = obj[k];
 		}
 	},
-
+	setAttr:function( dom , obj ){
+		for(var k in obj){
+			var value=obj[k];
+			if( FORM_PROPS.indexOf(k)!=-1 ){
+				dom[k] = !!value ;
+			}else{
+				if(k=="value"){
+					dom[k] = value ;
+				}else{
+					typeof value=='object' ? dom.setAttribute(k,JSON.stringify(value)) : dom.setAttribute(k,value);
+				}
+			}
+		}
+	},
+	// ***diff
 	diffClass:function( dom , n , old ){
 		for(var k in n ){
 			if( !!n[k] != !!old[k] ){
-				n[k] ? console.log('dom.classList.add',k) : console.log( 'dom.classList.remove',k) ;
+				// n[k] ? console.log('dom.classList.add',k) : console.log( 'dom.classList.remove',k) ;
 
 				n[k] ? dom.classList.add(k) : dom.classList.remove(k) ;
 			} 
@@ -55,20 +54,36 @@ var $ = {
 	diffStyle:function( dom , n , old ){
 		for(var k in n ){
 			if( n[k] !== old[k] ){
-				console.log('dom.style.',k,n[k])
+				// console.log('dom.style.',k,n[k])
 				dom.style[k] = n[k];
 			} 
 		}
 	},
+	diffAttr:function( dom , n , old ){
+		for(var k in n){
+			if( n[k] !== old[k] ){
+				var value=n[k];
+				if( FORM_PROPS.indexOf(k)!=-1 ){
+					dom[k] = !!value ;
+				}else{
+					if(k=="value"){
+						dom[k] = value ;
+					}else{
+						typeof value=='object' ? dom.setAttribute(k,JSON.stringify(value)) : dom.setAttribute(k,value);
+					}
+				}
+			}
+		}
+	},
 
+
+// 数据类型 相关
 	type:function( x ){
-		// 分辨数据类型 
 		// regexp function object array 
 		// null undefined boolean number string
 		var str = Object.prototype.toString.call( x ).slice(8, -1) ;
 		return str.toLocaleLowerCase();
 	},
-
 	notEmpty:function( x ){
 		return !$.empty(x);
 	},

@@ -3,12 +3,12 @@
 		
 		<div class="part1">
 			<span class="icon-stack"></span>
-			<span class="str">&nbsp;项目</span>
+			<span class="str"> 项目</span>
 		</div>
 
 		<div class="part2">
 			<div class="title">
-				<span class="icon-stack"></span>&nbsp;&nbsp;项目
+				<span class="icon-stack"></span>  项目
 			</div>
 			<ul>
 				<li v-for="(v,k) in this.list1"
@@ -20,7 +20,7 @@
 		</div>
 		<div class="part3">
 			<div class="title">
-				<span class="icon-clipboard"></span>&nbsp;&nbsp;任务
+				<span class="icon-clipboard"></span>  任务
 			</div>
 			<ul>
 				<li v-for="(v,k) in this.list2"
@@ -75,9 +75,8 @@
 
 		methods:{
 			getDefaultActive(){
-				let r = this.$router.$active ;
-				let pathArr = r.pathArr ;
-				let query = r.query ;
+				let pathArr = this.$router.pathArr ;
+				let query = this.$router.query ;
 				let projectFlagKey = query.projectFlagKey ;
 
 				this.list1.map( v=>{
@@ -97,13 +96,13 @@
 			changerojectFlagKey(v){
 				this.active = v.projectFlagKey ;
 				this.$diff ;
-				this.$router.push(`/project/projectType?projectFlagKey=${v.projectFlagKey}`);
+				this.$router.push(`/projectType?projectFlagKey=${v.projectFlagKey}`);
 			},
 
 			cahngePath(v){
 				this.active = v.path ;
 				this.$diff ;
-				this.$router.push(`/project/${v.path}`);
+				this.$router.push(`/${v.path}`);
 			}
 		}
 	}

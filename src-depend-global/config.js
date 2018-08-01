@@ -7,10 +7,14 @@ const base = {
 
 const ConfigObj = {
 	'test':{
+		// ...base ,
+		// host: 'http://123.103.9.204:6058',
+		// projectUrl: 'http://123.103.9.204:6058/project/dist/index.html',
+		// taskUrl   : 'http://123.103.9.204:6058/task/dist/index.html',
 		...base ,
-		host: 'http://123.103.9.204:6058',
-		projectUrl: 'http://123.103.9.204:6058/project/dist/index.html',
-		taskUrl   : 'http://123.103.9.204:6058/task/dist/index.html',
+		host : 'https://ezone.yonyoucloud.com',
+		projectUrl: 'https://ezone.yonyoucloud.com/project/dist/index.html',
+		taskUrl   : 'https://ezone.yonyoucloud.com/task/dist/index.html',
 	},
 	'prev':{
 		...base ,

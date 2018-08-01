@@ -18,12 +18,23 @@
 // 忽略选组    必须有组  , (?:\d{3})
 // 前瞻断言   'a2*3'.replace(/\w(?=\d)/,'X') --- X2*3  'a2*3'.replace(/\w(?!\d)/,'X') --- aX*3 ;
 
-
-Array.prototype.has  = function(str){
-	return this.indexOf(str)>-1 ? true : false ;
+var isEmptyObject = function(obj){
+	var ind = 0 ;
+	for(var i in obj){
+		i?ind++:null;
+	}
+	if( !ind ){
+		return true ;
+	}else {
+		return false ;
+	}
 }
-String.prototype.has = function(str){
-	return this.indexOf(str)>-1 ? true : false ;
+var isEmptyArray = function(arr){
+	if( arr.length==0 ){
+		return true ;
+	}else{
+		return false ;
+	}
 }
 
 
@@ -35,12 +46,12 @@ var t = {};
 
 		var tag_arr = t.make_tag_arr(tpl);
 
-		var vnode_tree = t.make_vnode_tree(tag_arr);
+		var tree = t.make_tree(tag_arr);
 
-		return vnode_tree ;
+		var render = t.makeRenderFunString( tree ); console.log(render)
+
+		return render ;
 	}
-
-
 
     t.encode_bind = function(s){
         if(s.length == 0) return "";
@@ -57,7 +68,8 @@ var t = {};
 
 	// 过滤模板 ;
 	t.filter_tpl = function(tpl){
-		// (0) 去换行 ; 		
+		// (0) 去换行 ; 	
+			tpl = tpl.replace(/\t/g,' ') ;
 			tpl = tpl.replace(/\r/g,' ') ;
 			tpl = tpl.replace(/\n/g,' ') ;
 			tpl = tpl.replace(/\s{1,}/g,' ');
@@ -76,7 +88,7 @@ var t = {};
 					E=E.replace(/\s+@([\w\.-]+)=/g,function(E,a){ return ' v-on:'+a+'='});
 					// v-on:click="cliclFun" 替换成 v-on:click="cliclFun()"
 					E=E.replace(/(v-on:[\w\.-]+=\"(.*?))\"/g,function(E,a,b){ 
-						var str = b.has('(')?str=E:str=(a+'()\"') ;
+						var str = b.indexOf('(')>-1?str=E:str=(a+'()\"') ;
 						return str.replace(/\s*/g,'');
 					});
 					// v-on:click="cliclFun()" 替换成 v-on:click="cliclFun(e)"
@@ -99,13 +111,13 @@ var t = {};
 
 		// (5) 替换 {{key}} 
 			tpl = tpl.replace(/\{\{(.*?)\}\}/g,function(E,a){
-				return '<font class="v-double" v-bind:V_DOUBLE="'+a+'"></font>';
+				return '<TEXT v-bind:vbind_double="'+a+'"></TEXT>';
 			}) ;
 		// (6) 替换 标签内文字 >123< 
 			tpl = tpl.replace(/>\s{1,}</g,'><');
 			tpl = tpl.replace(/>([^<>]+?)</g,function(E,a){
 				var s = a.replace(/\s{1,}/g,' ');
-				return '><font class="domtext" domtext="'+s.trim()+'"></font><';
+				return '><TEXT static_text="'+s.trim()+'"></TEXT><';
 			});
 
 		return tpl ;
@@ -141,7 +153,7 @@ var t = {};
 			};
 
 			// 第一个含有v-for的标签 表示进入一个v-for作用域 , 开始计数器 !!! ;
-			if( each.has('v-for')&&inVF==false ){
+			if( each.indexOf('v-for')>-1&&inVF==false ){
 				inVF=true;
 				// vpush_arr 添加默认值
 				vpush_arr = [{tag:'$ROOT',vfor_tag_arr:[]}]
@@ -151,12 +163,12 @@ var t = {};
 			if( inVF==true ){
 				// 开始标签
 				if( each[1]!='/' ){
-					if( each.has('v-for') ){
+					if( each.indexOf('v-for')>-1 ){
 						// 记录位置
 						vlen_arr.push(len);
 						// 节点
 						var obj = {
-							tag:'<article class="vfor_begin">',
+							tag:'<VFOR_BEGIN>',
 							vfor_tag_arr:[]
 						};
 						// 父亲的 vfor_tag_arr 加入当前节点为开始标签
@@ -179,7 +191,7 @@ var t = {};
 			  			vpush_arr.pop();
 
 			  			// 父级节点加入结束标签
-			  			vpush_arr[vpush_arr.length-1]['vfor_tag_arr'].push('</article vfor_end>')
+			  			vpush_arr[vpush_arr.length-1]['vfor_tag_arr'].push('</VFOR_END>')
 
 						// 最后退出节点时
 						if(vlen_arr.length==0){
@@ -199,7 +211,7 @@ var t = {};
 	}
 
 	// 生成标签树
-	t.make_vnode_tree = function (tag_arr) {
+	t.make_tree = function (tag_arr) {
 
 		var push_arr = [{tag:'$ROOT',children:[]}];
 
@@ -207,25 +219,44 @@ var t = {};
 			var each = tag_arr[i];
 			// 开始标签
 			if( each[1]!='/' ){
-				var vnode = null ;
-
+				var T = null ;
 				// v-for递归此函数 ;
-				if( each.tag && each.tag.has('vfor_begin') ){
-					vnode = t.make_vnode(each.tag);
-					vnode['vfor_vnode_tree'] = t.make_vnode_tree( each.vfor_tag_arr );
+				if( each.tag=='<VFOR_BEGIN>' ){
+					//解码 {{...}} 内部支持<>" , ="..." 内支持<> ;
+					var tag = t.decode_bind( each.tag );
+					var tagName = tag.match(/<([\w-\$]+).*>/)[1];
+					var data = t.getTreeData(tag);
+					T={
+						tag:tag,
+						tagName:tagName,
+						data_static: data.data_static ,
+						data_v: data.data_v
+					};
 
-					var match = vnode['vfor_vnode_tree'].tag.match(/v-for="\s*\(\s*([\w-]+)\s*,\s*([\w-]+)\s*\)\s+in\s+([\w-\.\[\]']+)\s*"/) ;
-
-					vnode['vfor_item']  = match[1] ;
-					vnode['vfor_key']   = match[2] ;
-					vnode['vfor_array'] = match[3] ;
+					var vfor_tree = t.make_tree( each.vfor_tag_arr );
+					var match = vfor_tree.tag.match(/v-for="\s*\(\s*([\w-]+)\s*,\s*([\w-]+)\s*\)\s+in\s+([\w-\.\[\]']+)\s*"/) ;
+					T['vfor_tree'] = vfor_tree ;
+					T['vfor_val']  = match[1] ;
+					T['vfor_key']  = match[2] ;
+					T['vfor_list'] = match[3] ;
 				}else{
-					vnode = t.make_vnode(each);
-					vnode['children']=[];
+					//解码 {{...}} 内部支持<>" , ="..." 内支持<> ;
+					var tag = t.decode_bind( each );
+					var tagName = tag.match(/<([\w-\$]+).*>/)[1];
+					var data = t.getTreeData(tag);
+					T={
+						tag:tag,
+						tagName:tagName,
+						data: t.getTreeData(tag),
+						data_static: data.data_static ,
+						data_v: data.data_v ,
+
+						children:[]
+					};
 				};
 
-				push_arr[push_arr.length-1]['children'].push(vnode);
-				push_arr.push(vnode);
+				push_arr[push_arr.length-1]['children'].push( T );
+				push_arr.push( T );
 			}else{
 			// 结束标签
 				push_arr.pop();
@@ -235,130 +266,181 @@ var t = {};
 		return push_arr[0].children[0];
 	}
 
+
 	// 制作一个虚拟dom ;
-	t.make_vnode = function( tag  ){
-		//解码 {{...}} 内部支持<>" , ="..." 内支持<> ;
-		var tag = t.decode_bind( tag ) ;
+	t.getTreeData = function( tag  ){
+		var S = {
+			text:'',
+			classList:'',
+			cssText:'',
+			attr:{},
+		};
+		var D = {
+		  	vbind_double:{},
+		  	vbind_class:{},
+		  	vbind_style:{},
+		  	vbind_attr:{},
 
-		var tagName = tag.match(/<([\w-\$]+).*>/)[1] ;
-
-	  	var vnode = {
-	  		$el:'',
-			tag:tag,
-		  	tagName: tagName.trim() ,
-			DOM:'',
-			domprops:{
-				domtext:'',
-				classList:'',cssText:'',attr:[]
-			},
-			vbind:{
-				double:{},
-				class:{}, style:{},attr:[], 
-			},
-			von:{},
-			vif:{},
-			vshow:{},
+		  	vif:{},
+		  	vshow:{},
+		  	von:{},
 		};
 
 		// 便利所有的属性 ;
-		var attributs = tag.match(/[^\s]+="(.*?)"+/g)||[] ; //log(attributs)
+		var attributs = tag.match(/[^\s]+="(.+?)"+/g)||[] ; //log(attributs)
 			attributs.map(function( each ){
-				// 处理事件
-				if( each.has('v-on:') ){
-					// push 
-					var on = vnode['von'];
-
+				// 处理v-on
+				if( each.indexOf('v-on:')>-1 ){
 					var match = each.match(/v-on:(.*)=["](.*)["]/);
 				    var key   = match[1];
 				    var value = match[2].trim();
-
-					var eName   = key ;
-					var vMethod = value.split('(')[0];
-					on[eName] = {
-						vMethod : vMethod,
-						eval_key: value
-					}
-				};
-
-				// 处理v-if , v-show
-				if( each.has('v-if=') ){
+				    D['von'][key]='function(evt){'+value+'}';
+				}
+				// 处理v-if 
+				else if( each.indexOf('v-if=')>-1 ){
 					var match = each.match(/v-if=["](.*)["]/);
 				    var value = match[1].trim();
-				    vnode['vif']={
-				    	eval_key:value ,
-				    	value:''
-				    };
+				    D['vif']={value:value} ;
 				}
-				if( each.has('v-show=') ){
+				// 处理v-show
+				else if( each.indexOf('v-show=')>-1 ){
 					var match = each.match(/v-show=["](.*)["]/);
 				    var value = match[1].trim();
-				    vnode['vshow']={
-				    	eval_key:value ,
-				    	value:''
-				    };
+				    D['vshow']={value:value}  ;
 				}
+				// 不赋值v-for 
+				else if( each.indexOf('v-for=')>-1 ){
 
-				// 处理绑定属性
-				if( each.has('v-bind:') ){
-					// push
-					var vbd = vnode['vbind'];
-
+				}
+				// 处理v-bind 
+				else if( each.indexOf('v-bind:')>-1 ){
 					var match = each.match(/v-bind:(.*)=["](.*)["]/);
 				    var key   = match[1];
 				    var value = match[2].trim();
-					if( key=='V_DOUBLE' ){
-						var obj = {
-							eval_key: value ,
-							value:''
-						}
-						vbd.double = obj ;
+					if( key=='vbind_double' ){
+						D['vbind_double']={value:value} ;
 					}else if( key=='class' ){
-						var obj = {
-							eval_key: value ,
-							value:''
+						// 对象语法 切割
+						var c_match = value.match(/\{(.*)\}/);
+						if( c_match&&c_match[1] ){
+							var c_arr = c_match[1].split(',');
+								c_arr.map(function(_class){
+									var v_k = _class.match(/(\w+)\s*:(.+)/);
+									if( v_k && v_k[1] && v_k[2] ){
+										D['vbind_class'][ v_k[1] ] = v_k[2] ;
+									}
+								})
 						}
-						vbd.class = obj ;
 					}else if( key=='style' ){
-						var obj = {
-							eval_key: value ,
-							value:''
+						// 对象语法 切割
+						var s_match = value.match(/\{(.*)\}/);
+						if( s_match&&s_match[1] ){
+							var s_arr = s_match[1].split(',');
+								s_arr.map(function(_style){
+									var v_k = _style.match(/(\w+)\s*:(.+)/);
+									if( v_k && v_k[1] && v_k[2] ){
+										D['vbind_style'][ v_k[1] ] = v_k[2] ;
+									}
+								})
 						}
-						vbd.style = obj ;
 					}else{
-						var obj = {
-							dom_key : key , 
-							eval_key: value,
-							value:''
-						}
-						vbd.attr.push(obj)
+						D['vbind_attr'][key] = value ;
 					}
 				}
-				// 静态属性
+				// 处理static
 				else{
-					// push
-					var ops = vnode['domprops'];
-
 					var match = each.match(/(.*)=["](.*)["]/);
 				    var key   = match[1];
 				    var value = match[2].trim();
-				    if( key=='domtext' ){
-				    	ops.domtext = value ;
+				    if( key=='static_text' ){
+				    	S['text'] = value ;
 				    }else if( key=='class' ){
-				    	ops.classList = value ;
+				    	S['classList'] = value ;
 				    }else if( key=="style" ){
-				    	ops.cssText = value ;
+				    	S['cssText'] = value ;
 				    }else{
-				    	ops.attr.push({
-				    		dom_key: key ,
-				    		value:   value
-				    	});
+				    	S['attr'][key] = value ;
 				    }
 				}
 			});
 
-		return vnode ;
+
+		// 处理空数据
+		!S.text ? (delete S.text) : null ;
+		!S.classList ? (delete S.classList) : null ;
+		!S.cssText ? (delete S.cssText) : null ;
+		isEmptyObject(S.attr) ? (delete S.attr) : null ;
+
+		isEmptyObject(D.vbind_double) ? (delete D.vbind_double) : null ;
+		isEmptyObject(D.vbind_class) ? (delete D.vbind_class) : null ;
+		isEmptyObject(D.vbind_style) ? (delete D.vbind_style) : null ;
+		isEmptyObject(D.vbind_attr) ? (delete D.vbind_attr) : null ;
+
+		isEmptyObject(D.vif) ? (delete D.vif) : null ;
+		isEmptyObject(D.vshow) ? (delete D.vshow) : null ;
+		isEmptyObject(D.von) ? (delete D.von) : null ;
+
+
+		return {
+			data_static:S,
+			data_v:D
+		}
+	}
+
+	t.makeRenderFunString = function(tree){
+		var str = t.getStr(tree) ;
+		// 替换render中的this为 $_THIS ;
+		    str = str.replace(/([^\w])this([^\w])/g,function(E,a,b){
+		    	return a+'$_THIS'+b
+		    });
+		return 'function(){'+
+					'var $_THIS=this ;'+ 
+					'var $_VFORLOOP=this.vforLoop.bind(this) ;'+ 
+					'return '+str+';'+
+				'}';
+	}
+	t.getStr= function(tree){
+		if(tree.vfor_tree){// v-for元素
+			var vfor_tree = tree.vfor_tree ;
+			var v = tree['vfor_val'];
+			var k = tree['vfor_key'];
+			var list = tree['vfor_list'];
+			return '{'+
+						'tagName: "'+tree.tagName+'",'+
+						'data_static: '+JSON.stringify(tree.data_static)+','+
+						'data_v: '+(JSON.stringify(tree.data_v)).replace(/"/g,'')+','+
+						'children: $_VFORLOOP('+list+',function('+v+','+k+'){'+
+							' return {'+
+								'tagName: "'+vfor_tree.tagName+'",'+
+								'data_static: '+JSON.stringify(vfor_tree.data_static)+','+
+								'data_v: '+(JSON.stringify(vfor_tree.data_v)).replace(/"/g,'')+','+
+								'children: '+t.getChildrenStr(vfor_tree)+
+							'}'+
+						'})'+//_VFORLOOP over ;
+					'}';
+		}else{ //正常元素
+			return '{'+
+						'tagName: "'+tree.tagName+'",'+
+						'data_static: '+JSON.stringify(tree.data_static)+','+
+						'data_v: '+(JSON.stringify(tree.data_v)).replace(/"/g,'')+','+
+						'children: '+t.getChildrenStr(tree)+
+					'}';
+		}
+	}
+	t.getChildrenStr = function( tree ){
+		var children = tree.children ;
+		var arr=[] ;
+		for(var i=0,len=children.length ; i<len ; i++){
+			arr.push(t.getStr(children[i])) ;
+		}
+		return '['+arr.join()+']';
 	}
 
 
 module.exports = t ;
+
+
+
+
+
 

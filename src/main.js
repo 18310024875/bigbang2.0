@@ -1,3 +1,22 @@
+Array.prototype.has  = function(str){
+	return this.indexOf(str)>-1 ? true : false ;
+}
+String.prototype.has = function(str){
+	return this.indexOf(str)>-1 ? true : false ;
+}
+
+
+Com.globalComponent('ok',{
+	template:`<div> <h1 v-for="(v,k) in this.list"></h1> </div>`,
+	data(){
+		return {
+			list:[1,2,3]
+		}
+	}
+})
+
+
+
 import $ from 'jquery';
 
 import tool from 'g/tool';
@@ -7,6 +26,7 @@ import Com from 'com';
 import 'assets/css/public.less';
 
 window.$ = $ ;
+
 Com.component.prototype.$ajax = tool.ajax ;
 Com.component.prototype.$ui   = tool.ui ;
 Com.component.prototype.$tool = tool ;
@@ -18,21 +38,19 @@ import gAvatar from 'components/common/g-avatar'; Com.globalComponent('gAvatar',
 
 // 全局选人组件 
 import selectMan from 'components/select-man/index.com';
-window.selectMan = window.S = new Com({ ...selectMan }).$mount('#app');
+window.selectMan = new Com({ ...selectMan }).$mount('#app');
 
 
-import app from 'src/app';
-import routes from 'src/app.routes';
+import project from 'components/project/project'; 
+import routes  from './routes';
 
 window.APP = new Com({
-	...app ,
+	...project ,
 	
 	routes ,
-	defaultUrl:'/project?projectFlagKey=masterJoin',
+	defaultUrl:'/projectType?projectFlagKey=masterJoin',
 
 }).$mount('#app');
-
-
 
 
 [

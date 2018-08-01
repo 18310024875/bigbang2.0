@@ -1,13 +1,13 @@
-import $ from './com.tool.js' ;
+import tool from './com.tool.js';
 
 import template from './com.template.js';
 
-import component from './com.component.js';
+import initComponent from './com.initComponent.js';
 
-import router from './com.router.js';
+import initRouter from './com.initRouter.js';
 
 
-window.Com = function( opt , props ){
+var Com = window.Com = function( opt , props , parentComponent){
 
 	// 判断是否解析了less
 	if( opt.templateOfLess && !opt.templateOfLessAppend ){
@@ -21,31 +21,23 @@ window.Com = function( opt , props ){
 			style.innerHTML = css ;
 
 		document.head.appendChild( style );
-	}
+	};
 
-	// 判断是否解析了树
-	!opt.tree ? opt.tree=Com.template.run( opt.template ) : null ;
 
-	// 解析的树克隆一份
-	var tree = $.clone(opt.tree);
+	// 如果没解析template为render自动解析 ;
+	!opt.render ? opt.render=Com.template.run( opt.template ) : null ;
+	typeof opt.render=='string' ? opt.render=eval('('+opt.render+')') : null ;
+
 
 	// 每次引入组件 data刷新 ;
-	var data 
 	!opt.data ? opt.data=function(){ return {} } : null ;
-	if( $.type(opt.data)=='function' ){
-		data = opt.data() ;
-	}else {
-		alert( 'data必须为函数' );
-		return ;
-	}
 
 
 	// 生成组件
 	return new Com.component( 
 		opt ,   //配置项
-		data ,  //配置项克隆data()返回值
-		tree ,  //解析配置项模板生成的组件树
 		props , //收到的props
+		parentComponent //父组件
 	);
 };
 
@@ -53,8 +45,9 @@ window.Com = function( opt , props ){
 Com.globalComponents={};
 Com.globalComponent = function(name , opt){
 
-	// 判断是否解析了树
-	!opt.tree ? opt.tree=Com.template.run( opt.template ) : null ;
+	// 如果没解析template为render自动解析 ;
+	!opt.render ? opt.render=Com.template.run( opt.template ) : null ;
+	typeof opt.render=='string' ? opt.render=eval('('+opt.render+')') : null ;
 
 	// 记录组件名 
 	Com.globalComponents[ name ] = opt ;
@@ -64,7 +57,11 @@ Com.globalComponent = function(name , opt){
 
 // 绑定到 Com 上 ;
 Com.template = template ;
-Com.component = component ;
-Com.router = router ;
+Com.tool = tool ;
+initComponent( Com );
+initRouter( Com );
 
 export default Com ;
+
+
+

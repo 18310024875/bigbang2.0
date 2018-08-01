@@ -39,7 +39,7 @@
 				<div v-show="this.loadStatus=='loading'" class="loading rot_animate icon-spinner2"></div>
 				<div v-show="this.loadStatus=='success'" class="success" @click="this.loadMore">加载更多</div>
 				<div v-show="this.loadStatus=='nodata'"  class="nodata">暂无数据</div>
-				<div v-show="this.loadStatus=='error'"   class="error"   @click="this.getList">加载失败 <span>&nbsp;重新加载</span></div>
+				<div v-show="this.loadStatus=='error'"   class="error"   @click="this.getList">加载失败 <span> 重新加载</span></div>
 			</div>
 
 		</ul>
@@ -107,6 +107,7 @@
 						pageSize:100
 					},
 					success(data){
+
 						!data ? data=[] : null ;
 
 						// 加载状态
@@ -118,8 +119,8 @@
 							this.loadStatus='success'
 						}
 
-						let selectedMans = window.selectMan.selectedMans ;
-						let mids = selectedMans.map( v=>+v.memberId );
+						var S = window.selectMan ;
+						let mids = S.selectedMans.map( v=>+v.memberId );
 						// 赋值
 						data = data.map((v)=>{
 							let obj = { 
@@ -130,7 +131,7 @@
 							obj.type==0 ? obj.checked=mids.has(+obj.memberId) : null ;
 
 							// 加入根节点
-							obj.type==0 ? window.selectMan.tabDepMans.push( obj ) : null ;
+							obj.type==0 ? S.tabDepMans.push( obj ) : null ;
 							
 							return obj ;
 						});

@@ -27,11 +27,12 @@
 		},
 
 		methods:{
-			open( selectedMans=[] , callback=function(){} ){
+			open( selectedMans=[] , isRadio=false , callback=function(){} ){
 				this.callback = callback ;
+				this.isRadio = isRadio ;
 				this.tabDepMans=[];
 				this.tabManMans=[];
-				this.selectedMans=selectedMans ;
+				this.selectedMans=selectedMans.concat([]) ;
 				this.openIt=true;
 				this.$diff ;
 			},
@@ -63,7 +64,7 @@
 				})
 			},
 			addMan( item ){
-				this.selectedMans.push( item ) ;
+				this.isRadio ? this.selectedMans=[item] : this.selectedMans.push( item ) ;
 				this.selectedMans = this.selectedMans.concat([]) ;
 				this.$diff ;
 

@@ -28,7 +28,7 @@ var autoprefixPlugin =
 	        }));
 
 // 解析模板 ;
-var template = require('./com.template.js');
+var template = require('../com/com.template.js');
 
 // 解析路径
 var path = require('path');
@@ -54,9 +54,9 @@ module.exports = function( com ){
 			Number(tpl)===0 ? tpl='<i class="empty_template"/>' : null ;
 		if( tpl ){
 
-			var tree = template.run( tpl ) ;
+			var render = template.run( tpl ) ;
 
-			js = js.replace(/export\s+default\s*(\\n)*\s*{/,`export default { \n tree:${JSON.stringify(tree)} ,\n`)
+			js = js.replace(/export\s+default\s*(\\n)*\s*{/,`export default { \n render:${render} ,\n`)
 		}
 
 		// 3 获取 style ;

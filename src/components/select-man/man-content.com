@@ -19,7 +19,7 @@
 				<div v-show="this.loadStatus=='loading'" class="loading rot_animate icon-spinner2"></div>
 				<div v-show="this.loadStatus=='success'" class="success" @click="this.loadMore">加载更多</div>
 				<div v-show="this.loadStatus=='nodata'"  class="nodata">已加全部</div>
-				<div v-show="this.loadStatus=='error'"   class="error"   @click="this.getList">加载失败 <span>&nbsp;重新加载</span></div>
+				<div v-show="this.loadStatus=='error'"   class="error"   @click="this.getList">加载失败 <span> 重新加载</span></div>
 			</div>
 		</div>
 	</div>
@@ -83,8 +83,8 @@
 						}
 
 						// 拼接数组
-						let selectedMans = window.selectMan.selectedMans ;
-						let mids = selectedMans.map( v=>+v.memberId );
+						var S = window.selectMan ;
+						let mids = S.selectedMans.map( v=>+v.memberId );
 						data.map((v)=>{
 							v.type=0 ;
 							v.checked=mids.has(+v.memberId);
@@ -92,7 +92,7 @@
 						});
 						this.list = this.list.concat(data);
 						// 加入根节点
-						window.selectMan.tabManMans=this.list ;
+						S.tabManMans=this.list ;
 
 						this.$diff ;
 					},

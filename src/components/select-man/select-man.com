@@ -73,6 +73,7 @@
 			},
 			submit(){
 				let list = window.selectMan.selectedMans.map( v=>({
+					avatar: v.avatar ,
 					memberId : v.memberId,
 					userName : v.userName,
 				}))
@@ -138,6 +139,7 @@
 				border-right: 1px solid #dddee1;
 				padding-top: 40px;
 				position: relative;
+				overflow-y: auto;
 				&>ul{
 					position: absolute;
 					left: 0;top: 0;
